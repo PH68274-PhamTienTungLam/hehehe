@@ -2,19 +2,20 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gửi Linh xinh đẹp</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden;
+            overflow: hidden; 
             background-color: #000;
             font-family: 'Arial', sans-serif;
             color: white;
-            user-select: none; /* Không cho bôi đen chữ */
+            user-select: none; 
+            touch-action: none;
         }
 
-        /* --- CSS CHO PHẦN CÂU HỎI (FORM) --- */
+        /* --- CSS CHO PHẦN CÂU HỎI --- */
         .container {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -22,29 +23,30 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 100; /* Nằm đè lên canvas */
+            z-index: 100;
             background: radial-gradient(circle, #2c001e 0%, #000000 100%);
             transition: opacity 1s ease;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         h1 {
             font-size: 2.5rem;
             color: #ff69b4;
             text-shadow: 0 0 10px #ff69b4;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             text-align: center;
-            pointer-events: none; /* Không cho chuột tác động vào chữ */
+            pointer-events: none;
+            line-height: 1.5;
         }
 
         .btn-group {
             position: relative;
-            /* Không dùng flex gap ở đây nữa để dễ xử lý position absolute cho nút chạy trốn */
-            width: 100%;
-            height: 100px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 20px;
+            gap: 30px;
+            width: 100%;
+            flex-wrap: wrap; 
         }
 
         button {
@@ -54,11 +56,11 @@
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
-            white-space: nowrap; /* Giữ chữ trên 1 dòng */
-            z-index: 101; /* Đảm bảo nút luôn nổi lên trên */
+            white-space: nowrap;
+            z-index: 101;
+            -webkit-tap-highlight-color: transparent; 
         }
 
-        /* Nút màu hồng */
         .btn-pink {
             background-color: #ff3366;
             color: white;
@@ -66,23 +68,19 @@
             transition: transform 0.2s;
         }
         
-        .btn-pink:hover {
-            transform: scale(1.1);
-        }
+        .btn-pink:hover { transform: scale(1.1); }
+        .btn-pink:active { transform: scale(0.95); }
 
-        /* Nút chạy trốn */
         #btn-no {
             background-color: #555;
             color: #ccc;
-            box-shadow: none;
-            position: relative; /* Để ban đầu nó nằm cạnh nút kia */
-            transition: top 0.1s, left 0.1s; /* Chuyển động nhanh */
+            transition: top 0.1s ease-out, left 0.1s ease-out; /* Nút nhảy nhanh hơn chút */
         }
 
-        /* Input đi chơi */
         input[type="text"] {
             padding: 15px;
-            width: 300px;
+            width: 80%; 
+            max-width: 400px;
             font-size: 1.2rem;
             border-radius: 10px;
             border: 2px solid #ff3366;
@@ -92,11 +90,9 @@
             text-align: center;
         }
 
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
 
-        /* --- CSS CHO PHẦN HIỆU ỨNG VŨ TRỤ (CANVAS) --- */
+        /* --- CSS CHO CANVAS --- */
         canvas {
             display: block;
             position: absolute;
@@ -106,8 +102,7 @@
 
         #final-message {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             color: #ff3366;
             font-size: 5rem;
@@ -118,20 +113,37 @@
             text-shadow: 0 0 20px rgba(255, 51, 102, 0.8);
             font-family: 'Brush Script MT', cursive;
             z-index: 10;
-            width: 100%;
+            width: 90%;
             text-align: center;
         }
 
         .show-text { opacity: 1 !important; }
         .heartbeat { animation: heartbeat 1.5s infinite; }
+
         @keyframes heartbeat {
             0% { transform: translate(-50%, -50%) scale(1); }
             50% { transform: translate(-50%, -50%) scale(1.1); }
             100% { transform: translate(-50%, -50%) scale(1); }
         }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5rem; margin-bottom: 20px; }
+            button { padding: 12px 20px; font-size: 1rem; }
+            #final-message { font-size: 3rem; }
+            .btn-group { gap: 15px; }
+        }
     </style>
 </head>
 <body>
+
+    <audio id="bg-music" loop>
+        <source src="nhacNen.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/download/audio/2022/11/22/audio_febc508520.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="sfx-jump">
+        <source src="https://www.soundjay.com/buttons/sounds/button-16.mp3" type="audio/mpeg">
+    </audio>
 
     <div id="screen-1" class="container">
         <h1>Bạn là ai?</h1>
@@ -143,7 +155,7 @@
 
     <div id="screen-2" class="container hidden">
         <h1>Bạn có muốn đi chơi với Lâm<br>vào hôm 18/12/2025 không?</h1>
-        <input type="text" id="fake-input" placeholder="Nhập câu trả lời của bạn..." autocomplete="off">
+        <input type="text" id="fake-input" placeholder="Nhập câu trả lời..." autocomplete="off">
         <br><br>
         <button id="btn-send" class="btn-pink">Gửi câu trả lời</button>
     </div>
@@ -152,61 +164,83 @@
     <canvas id="canvas"></canvas>
 
     <script>
-        /* ================= LOGIC FORM (TROLL) ================= */
+        /* ================= XỬ LÝ ÂM THANH THÔNG MINH ================= */
+        const bgMusic = document.getElementById('bg-music');
+        const sfxJump = document.getElementById('sfx-jump');
+        bgMusic.volume = 0.6; 
+
+        // Hàm này sẽ cố gắng phát nhạc
+        function tryPlayMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Chờ tương tác..."));
+            }
+        }
+
+        // KỸ THUẬT: Bắt sự kiện chạm/click đầu tiên vào trang web
+        // Bất kể người dùng bấm vào đâu lần đầu tiên, nhạc sẽ bật ngay
+        document.body.addEventListener('click', tryPlayMusic, { once: true });
+        document.body.addEventListener('touchstart', tryPlayMusic, { once: true });
+        // Thêm cả sự kiện di chuột cho chắc chắn trên PC
+        document.body.addEventListener('mousemove', tryPlayMusic, { once: true });
+
+        function playSoundJump() {
+            sfxJump.currentTime = 0; 
+            sfxJump.play().catch(e => {}); 
+        }
+
+        /* ================= LOGIC FORM ================= */
         const screen1 = document.getElementById('screen-1');
         const screen2 = document.getElementById('screen-2');
-        const btnNo = document.getElementById('btn-no'); // Nút chạy trốn
-        const btnYes = document.getElementById('btn-yes'); // Nút chọn
+        const btnNo = document.getElementById('btn-no'); 
+        const btnYes = document.getElementById('btn-yes'); 
         const fakeInput = document.getElementById('fake-input');
         const btnSend = document.getElementById('btn-send');
 
-        // 1. Logic nút chạy trốn (ĐÃ SỬA: Nhảy mãi mãi và không biến mất)
-        btnNo.addEventListener('mouseover', function() {
-            // Lấy kích thước màn hình hiện tại
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
+        function moveButton() {
+            playSoundJump();
 
-            // Lấy kích thước nút
-            const btnWidth = this.offsetWidth;
-            const btnHeight = this.offsetHeight;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const btnRect = btnNo.getBoundingClientRect();
+            
+            const padding = 20; 
+            const maxX = windowWidth - btnRect.width - padding;
+            const maxY = windowHeight - btnRect.height - padding;
 
-            // Tính toán vị trí ngẫu nhiên, trừ đi lề để không bị sát mép quá
-            // (screenWidth - btnWidth - 20) đảm bảo nút luôn nằm trong màn hình
-            const randomX = Math.random() * (screenWidth - btnWidth - 50); 
-            const randomY = Math.random() * (screenHeight - btnHeight - 50);
+            const randomX = Math.floor(Math.random() * (maxX - padding)) + padding;
+            const randomY = Math.floor(Math.random() * (maxY - padding)) + padding;
 
-            // Gán vị trí mới
-            this.style.position = 'absolute';
-            this.style.left = randomX + 'px';
-            this.style.top = randomY + 'px';
+            btnNo.style.position = 'fixed';
+            btnNo.style.left = randomX + 'px';
+            btnNo.style.top = randomY + 'px';
+        }
+
+        btnNo.addEventListener('mouseover', moveButton);
+
+        btnNo.addEventListener('touchstart', (e) => {
+            e.preventDefault(); 
+            moveButton();
+            tryPlayMusic(); // Đảm bảo nhạc chạy khi chạm nút này
         });
 
-        // 2. Logic chuyển sang màn 2
         btnYes.addEventListener('click', () => {
+            tryPlayMusic(); // Đảm bảo nhạc chạy khi bấm nút này
             screen1.classList.add('hidden');
             screen2.classList.remove('hidden');
             fakeInput.focus();
         });
 
-        // 3. Logic tự điền chữ (Keylogger fake)
-        const targetText = "dạ có em yêu rất sẵn sàng";
+        const targetText = "dạ có, Em yêu đồng ý <3";
         fakeInput.addEventListener('input', (e) => {
             const currentLength = e.target.value.length;
             if (currentLength > 0) {
-                // Nếu người dùng xóa bớt ký tự, ta cũng cắt chuỗi target tương ứng
-                // Nếu nhập thêm, ta lấy thêm ký tự từ target
-                // Logic này đảm bảo trải nghiệm mượt mà dù xóa hay thêm
                 e.target.value = targetText.substring(0, currentLength);
-                
-                // Nếu gõ dài hơn câu mẫu thì giữ nguyên câu mẫu
-                if (currentLength > targetText.length) {
-                    e.target.value = targetText;
-                }
+                if (currentLength > targetText.length) e.target.value = targetText;
             }
         });
 
-        // 4. Logic Gửi -> Hiện hiệu ứng
         btnSend.addEventListener('click', () => {
+            fakeInput.blur();
             screen2.style.opacity = '0'; 
             setTimeout(() => {
                 screen2.classList.add('hidden'); 
@@ -215,24 +249,26 @@
             }, 1000);
         });
 
-
-        /* ================= LOGIC HIỆU ỨNG VŨ TRỤ ================= */
+        /* ================= LOGIC VŨ TRỤ ================= */
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const msgElement = document.getElementById('final-message');
 
         let width, height;
         let particles = [];
-        const particleCount = 1500; 
+        
+        const isMobile = window.innerWidth < 768;
+        const particleCount = isMobile ? 600 : 1500; 
+        
         let isSphere = false;
         let rotationSpeed = 0.005;
 
-        // Cấu hình kích thước
-        const treeHeight = 500;
-        const treeBaseRadius = 250; 
-        const trunkHeight = 100;
-        const trunkRadius = 40;
-        const sphereRadius = 300;
+        const treeHeight = isMobile ? 300 : 500;
+        const treeBaseRadius = isMobile ? 150 : 250; 
+        const trunkHeight = isMobile ? 60 : 100;
+        const trunkRadius = isMobile ? 20 : 40;
+        const sphereRadius = isMobile ? 180 : 300;
+
         const colors = ['#e74c3c', '#2ecc71', '#f1c40f', '#3498db', '#ffffff'];
 
         function resize() {
@@ -248,11 +284,10 @@
                 this.y = (Math.random() - 0.5) * height;
                 this.z = (Math.random() - 0.5) * 500;
                 this.tx = 0; this.ty = 0; this.tz = 0;
-                this.size = Math.random() * 3 + 2; 
+                this.size = Math.random() * (isMobile ? 2 : 3) + 2; 
                 this.color = colors[Math.floor(Math.random() * colors.length)];
                 this.setTreeTarget();
             }
-
             setTreeTarget() {
                 const isTrunk = Math.random() < 0.15; 
                 if (isTrunk) {
@@ -273,7 +308,6 @@
                     if(this.color === '#8B4513') this.color = colors[Math.floor(Math.random() * colors.length)];
                 }
             }
-
             setSphereTarget() {
                 const u = Math.random();
                 const v = Math.random();
@@ -284,7 +318,6 @@
                 this.tz = sphereRadius * Math.cos(phi);
                 if (this.color === '#8B4513') this.color = colors[Math.floor(Math.random() * colors.length)];
             }
-
             update() {
                 this.x += (this.tx - this.x) * 0.05;
                 this.y += (this.ty - this.y) * 0.05;
@@ -310,10 +343,8 @@
         }
 
         let angle = 0;
-        let animationId;
-
         function animate() {
-            animationId = requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
             ctx.fillStyle = '#000000'; 
             ctx.fillRect(0, 0, width, height);
             
@@ -329,7 +360,10 @@
                 let x = p.x * cos - p.z * sin;
                 let z = p.x * sin + p.z * cos;
                 let y = p.y;
-                const scale = 400 / (400 + (z + 1000));
+                
+                const cameraZ = isMobile ? 1200 : 1000;
+                const scale = 400 / (400 + (z + cameraZ));
+                
                 const canvasX = cx + x * scale;
                 const canvasY = cy + y * scale;
                 if (scale > 0) {
@@ -346,9 +380,8 @@
             animate();
             window.addEventListener('resize', resize);
         }
-
+        
         resize();
-
     </script>
 </body>
 </html>
